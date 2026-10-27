@@ -6,168 +6,364 @@
   <title>THOUGHTLEAKS // The Say-to-Do Protocol</title>
   <style>
     :root {
-      --bg: #07090e;
-      --card: #0f141f;
+      --bg: #06090e;
+      --card: #0d121d;
+      --card-hover: #141c2e;
       --cyan: #00f0ff;
+      --cyan-glow: rgba(0, 240, 255, 0.25);
       --amber: #ffb703;
       --crimson: #ff0055;
       --text: #e2e8f0;
       --muted: #64748b;
+      --border: #1e293b;
     }
     * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
-    body { background-color: var(--bg); color: var(--text); overflow-x: hidden; padding-bottom: 60px; }
-    header { border-bottom: 1px solid #1e293b; padding: 24px; text-align: center; background: rgba(15, 20, 31, 0.8); }
-    h1 { color: var(--cyan); letter-spacing: 4px; font-size: 2.2rem; text-transform: uppercase; }
-    .tagline { color: var(--muted); margin-top: 8px; font-size: 0.95rem; }
-    .container { max-width: 900px; margin: 0 auto; padding: 24px; }
-    .panel { background: var(--card); border: 1px solid #1e293b; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
-    h2 { color: var(--amber); margin-bottom: 16px; font-size: 1.3rem; border-left: 4px solid var(--amber); padding-left: 8px; }
-    .slider-container { margin: 20px 0; }
-    input[type=range] { width: 100%; accent-color: var(--cyan); margin: 12px 0; }
-    .status-row { display: flex; justify-content: space-between; font-weight: bold; margin-top: 8px; }
-    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 16px; }
-    .entity-card { background: #131a29; border: 1px solid #1e293b; border-radius: 6px; padding: 16px; border-top: 3px solid var(--cyan); }
-    .entity-title { font-weight: bold; color: var(--cyan); font-size: 1.05rem; }
-    .entity-code { font-size: 0.8rem; color: var(--amber); margin-bottom: 8px; }
-    .entity-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
-    .btn { background: var(--cyan); color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 12px; }
-    .btn:hover { background: #38f8ff; }
+    body { background-color: var(--bg); color: var(--text); overflow-x: hidden; padding-bottom: 80px; position: relative; }
+    
+    /* Background Canvas */
+    #ambientCanvas { position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 0; pointer-events: none; opacity: 0.35; }
+
+    /* Layout Wrapper */
+    .wrapper { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 20px; }
+
+    header { border-bottom: 1px solid var(--border); padding: 40px 20px 30px; text-align: center; background: rgba(13, 18, 29, 0.85); backdrop-filter: blur(8px); }
+    .badge { display: inline-block; padding: 4px 12px; font-size: 0.75rem; letter-spacing: 2px; text-transform: uppercase; color: var(--cyan); border: 1px solid var(--cyan); border-radius: 20px; margin-bottom: 14px; box-shadow: 0 0 10px var(--cyan-glow); }
+    h1 { color: #fff; letter-spacing: 5px; font-size: 2.4rem; text-transform: uppercase; text-shadow: 0 0 20px var(--cyan-glow); }
+    .tagline { color: var(--muted); margin-top: 10px; font-size: 1rem; max-width: 600px; margin-left: auto; margin-right: auto; line-height: 1.5; }
+
+    .panel { background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin-top: 32px; box-shadow: 0 4px 20px rgba(0,0,0,0.4); transition: border-color 0.3s; }
+    .panel:hover { border-color: rgba(0, 240, 255, 0.3); }
+    h2 { color: var(--amber); margin-bottom: 12px; font-size: 1.25rem; letter-spacing: 1px; display: flex; align-items: center; gap: 8px; }
+
+    /* Interactive Calibration Simulator */
+    .sim-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin: 20px 0; }
+    @media(max-width: 700px) { .sim-grid { grid-template-columns: 1fr; } }
+    .choice-btn { background: #111726; border: 1px solid var(--border); padding: 14px; border-radius: 6px; color: var(--text); cursor: pointer; text-align: left; font-size: 0.88rem; transition: all 0.2s; display: flex; align-items: flex-start; gap: 10px; }
+    .choice-btn:hover { background: var(--card-hover); border-color: var(--cyan); }
+    .choice-btn.active { background: rgba(0, 240, 255, 0.1); border-color: var(--cyan); box-shadow: 0 0 12px var(--cyan-glow); }
+    .choice-icon { color: var(--cyan); font-weight: bold; }
+
+    .gauge-wrapper { background: #080c14; border: 1px solid var(--border); border-radius: 8px; padding: 18px; margin-top: 16px; }
+    .gauge-header { display: flex; justify-content: space-between; font-size: 0.85rem; font-weight: bold; margin-bottom: 8px; }
+    .progress-bar { height: 10px; background: #162032; border-radius: 5px; overflow: hidden; position: relative; }
+    .progress-fill { height: 100%; width: 25%; background: var(--cyan); transition: width 0.4s ease, background-color 0.4s ease; box-shadow: 0 0 10px var(--cyan); }
+    .gauge-meta { display: flex; justify-content: space-between; font-size: 0.8rem; color: var(--muted); margin-top: 10px; }
+
+    /* Card Grid */
+    .filter-bar { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .filter-btn { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 6px 14px; border-radius: 20px; font-size: 0.78rem; cursor: pointer; transition: all 0.2s; }
+    .filter-btn.active, .filter-btn:hover { color: #fff; border-color: var(--cyan); background: rgba(0, 240, 255, 0.08); }
+
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 16px; margin-top: 20px; }
+    .entity-card { background: #0e1422; border: 1px solid var(--border); border-radius: 8px; padding: 18px; transition: transform 0.2s, border-color 0.2s, box-shadow 0.2s; cursor: pointer; position: relative; overflow: hidden; }
+    .entity-card:hover { transform: translateY(-3px); border-color: var(--cyan); box-shadow: 0 6px 16px rgba(0, 240, 255, 0.15); }
+    .entity-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+    .entity-node { font-size: 0.75rem; letter-spacing: 1.5px; color: var(--muted); font-weight: bold; }
+    .entity-tag { font-size: 0.68rem; padding: 2px 8px; border-radius: 10px; background: #162032; color: var(--cyan); }
+    .entity-name { font-weight: bold; color: #fff; font-size: 1.1rem; letter-spacing: 1px; margin-bottom: 8px; }
+    .entity-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.45; }
+
+    /* Input & Scribe Register */
+    .scribe-box { display: flex; gap: 10px; margin-top: 16px; }
+    @media(max-width: 600px) { .scribe-box { flex-direction: column; } }
+    input[type=text] { flex: 1; padding: 14px 16px; background: #080c14; border: 1px solid var(--border); color: #fff; border-radius: 6px; font-size: 0.95rem; outline: none; transition: border-color 0.2s; }
+    input[type=text]:focus { border-color: var(--cyan); box-shadow: 0 0 10px var(--cyan-glow); }
+    .btn { background: var(--cyan); color: #05080f; border: none; padding: 14px 28px; font-weight: bold; border-radius: 6px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; font-size: 0.88rem; transition: background 0.2s, transform 0.1s; white-space: nowrap; }
+    .btn:hover { background: #3df3ff; transform: translateY(-1px); }
+
+    /* Interactive Holographic Modal */
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(4, 7, 13, 0.85); backdrop-filter: blur(6px); z-index: 100; display: none; align-items: center; justify-content: center; padding: 20px; }
+    .modal-content { background: var(--card); border: 1px solid var(--cyan); border-radius: 10px; max-width: 520px; width: 100%; padding: 28px; box-shadow: 0 0 30px var(--cyan-glow); position: relative; animation: modalPop 0.25s ease; }
+    @keyframes modalPop { from { transform: scale(0.95); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .close-btn { position: absolute; top: 16px; right: 20px; color: var(--muted); font-size: 1.4rem; cursor: pointer; background: none; border: none; }
+    .close-btn:hover { color: #fff; }
+    .modal-title { font-size: 1.3rem; color: var(--cyan); margin-bottom: 6px; }
+    .modal-subtitle { font-size: 0.8rem; color: var(--amber); margin-bottom: 16px; letter-spacing: 1px; }
+    .modal-body { font-size: 0.9rem; color: #cbd5e1; line-height: 1.6; border-top: 1px solid var(--border); padding-top: 14px; }
   </style>
 </head>
 <body>
 
+  <canvas id="ambientCanvas"></canvas>
+
   <header>
-    <h1>THOUGHTLEAKS</h1>
-    <div class="tagline">Maintain Say-to-Do Equilibrium // Relieve the Burden of External Delivery</div>
+    <div class="wrapper">
+      <div class="badge">Decentralized Neural Ledger</div>
+      <h1>THOUGHTLEAKS</h1>
+      <div class="tagline">Calibrate your Say-to-Do equilibrium. Release the weight of policing external delivery and reclaim operational autonomy.</div>
+    </div>
   </header>
 
-  <div class="container">
+  <div class="wrapper">
+
+    <!-- INTERACTIVE SECTION 1: Burden Test -->
     <div class="panel">
-      <h2>1. The Say-to-Do Simulator</h2>
+      <h2>// 01. ACTIVE NEURAL CALIBRATION</h2>
       <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5;">
-        Evaluate how policing others' societal delivery against your personal responsibility impacts your systemic function.
+        Simulate real-time cognitive weight. Select the burdens you are currently holding to see their impact on your mental bandwidth and standard safety shield:
       </p>
-      <div class="slider-container">
-        <label for="burdenSlider">External Mental Burden Level (<span id="burdenVal">20</span>%):</label>
-        <input type="range" id="burdenSlider" min="0" max="100" value="20">
+
+      <div class="sim-grid">
+        <button class="choice-btn active" onclick="toggleBurden(this, 15)">
+          <span class="choice-icon">■</span>
+          <span>Fixating on others' missed duties & deliveries (+15% Load)</span>
+        </button>
+        <button class="choice-btn" onclick="toggleBurden(this, 25)">
+          <span class="choice-icon">■</span>
+          <span>Absorbing family/institutional liabilities outside your control (+25% Load)</span>
+        </button>
+        <button class="choice-btn" onclick="toggleBurden(this, 30)">
+          <span class="choice-icon">■</span>
+          <span>Hesitating to act due to fear of external judgment (+30% Load)</span>
+        </button>
+        <button class="choice-btn" onclick="toggleBurden(this, 20)">
+          <span class="choice-icon">■</span>
+          <span>Enduring deceptive testimony or altered data (+20% Load)</span>
+        </button>
       </div>
-      <div class="status-row">
-        <span>Operational Efficiency: <span id="effVal" style="color: var(--cyan);">80%</span></span>
-        <span>Standard Safety Shield: <span id="shieldVal" style="color: var(--amber);">Stable</span></span>
+
+      <div class="gauge-wrapper">
+        <div class="gauge-header">
+          <span>COGNITIVE BURDEN: <span id="burdenPct" style="color: var(--cyan);">15%</span></span>
+          <span id="shieldStatus" style="color: var(--cyan);">SHIELD INTEGRITY: 85% (OPTIMAL)</span>
+        </div>
+        <div class="progress-bar">
+          <div class="progress-fill" id="progressBar" style="width: 15%;"></div>
+        </div>
+        <div class="gauge-meta">
+          <span>Operational Efficiency: <span id="effPct" style="color: #fff;">85%</span></span>
+          <span id="tacticalAction">Action: Normal flow. Maintain personal output.</span>
+        </div>
       </div>
+      <button class="btn" style="margin-top: 16px; background: transparent; border: 1px solid var(--cyan); color: var(--cyan);" onclick="resetBurden()">
+        ⚡ Trigger Exoneration (Purge All External Weight)
+      </button>
     </div>
 
+    <!-- INTERACTIVE SECTION 2: Filterable Entities -->
     <div class="panel">
-      <h2>2. The Twelve Cardinal Entities</h2>
-      <div class="card-grid">
-        <div class="entity-card">
-          <div class="entity-title">NODE-01</div>
-          <div class="entity-code">CODENAME: MATRIX-MATRON</div>
-          <div class="entity-desc">Ancestral Anchor. Demands absolute fidelity to biological and familial bonds.</div>
+      <h2>// 02. THE TWELVE CARDINAL ANOMALIES</h2>
+      <p style="color: var(--muted); font-size: 0.9rem;">
+        Click any anomaly card to decrypt its manifested conflict and tactical counter-measure.
+      </p>
+
+      <div class="filter-bar">
+        <button class="filter-btn active" onclick="filterCards('all', this)">All Nodes (12)</button>
+        <button class="filter-btn" onclick="filterCards('ancestral', this)">Ancestral & Bond</button>
+        <button class="filter-btn" onclick="filterCards('kinetic', this)">Kinetic & Velocity</button>
+        <button class="filter-btn" onclick="filterCards('perjury', this)">Perjury & Protocol</button>
+      </div>
+
+      <div class="card-grid" id="cardGrid">
+        <!-- 12 Entities with no 'codenames' word -->
+        <div class="entity-card" data-cat="ancestral" onclick="openModal('MATRIX-MATRON', 'Ancestral Anchor // Class-0 Primordial', 'Guards biological lineage records. Penalizes operators who sever foundational familial bonds or abandon elder architectures.')">
+          <div class="entity-header"><span class="entity-node">NODE-01</span><span class="entity-tag">Ancestral</span></div>
+          <div class="entity-name">MATRIX-MATRON</div>
+          <div class="entity-desc">Ancestral Anchor. Demands absolute fidelity to biological and familial roots.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-02</div>
-          <div class="entity-code">CODENAME: IRON-TITAN</div>
-          <div class="entity-desc">Kinetic Juggernaut. Evaluates direct physical and functional delivery without hesitation.</div>
+
+        <div class="entity-card" data-cat="kinetic" onclick="openModal('IRON-TITAN', 'Kinetic Juggernaut // Absolute Delivery', 'A monolithic entity that evaluates direct output without nuance. Neutralizes hesitation and forces instant execution.')">
+          <div class="entity-header"><span class="entity-node">NODE-02</span><span class="entity-tag">Kinetic</span></div>
+          <div class="entity-name">IRON-TITAN</div>
+          <div class="entity-desc">Kinetic Juggernaut. Evaluates direct functional delivery without hesitation.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-03</div>
-          <div class="entity-code">CODENAME: RESONANCE-SIREN</div>
-          <div class="entity-desc">Acoustic Disruptor. Projects self-doubt and internal guilt directly into network channels.</div>
+
+        <div class="entity-card" data-cat="perjury" onclick="openModal('RESONANCE-SIREN', 'Acoustic Disruptor // Guilt Frequency', 'Projects acoustic streams of self-doubt directly into player buffers. Deflected by standard safety audio filtration.')">
+          <div class="entity-header"><span class="entity-node">NODE-03</span><span class="entity-tag">Perjury</span></div>
+          <div class="entity-name">RESONANCE-SIREN</div>
+          <div class="entity-desc">Acoustic Disruptor. Projects self-doubt and internal guilt into open channels.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-04</div>
-          <div class="entity-code">CODENAME: ZERO-ARBITER</div>
-          <div class="entity-desc">Protocol Judge. Enforces strict equivalence between stated oaths and historical ledger entries.</div>
+
+        <div class="entity-card" data-cat="perjury" onclick="openModal('ZERO-ARBITER', 'Protocol Judge // Ledger Auditor', 'Commands systemic balance equations. Drains shielding if current action contradicts historical stated records.')">
+          <div class="entity-header"><span class="entity-node">NODE-04</span><span class="entity-tag">Perjury</span></div>
+          <div class="entity-name">ZERO-ARBITER</div>
+          <div class="entity-desc">Protocol Judge. Enforces equivalence between stated oaths and historical records.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-05</div>
-          <div class="entity-code">CODENAME: CHRONO-DRIFT</div>
-          <div class="entity-desc">Temporal Ghost. Fuses unresolved past obligations into present decision branches.</div>
+
+        <div class="entity-card" data-cat="ancestral" onclick="openModal('CHRONO-DRIFT', 'Temporal Ghost // Void Fugitive', 'Loops unresolved past obligations into present decision paths. Defeated by decisive forward detachment.')">
+          <div class="entity-header"><span class="entity-node">NODE-05</span><span class="entity-tag">Ancestral</span></div>
+          <div class="entity-name">CHRONO-DRIFT</div>
+          <div class="entity-desc">Temporal Ghost. Fuses unresolved past debts into present decision branches.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-06</div>
-          <div class="entity-code">CODENAME: GLITCH-SPECTER</div>
-          <div class="entity-desc">Cryptic Perjury. Shifts ground truth data through incomplete and altered registry keys.</div>
+
+        <div class="entity-card" data-cat="perjury" onclick="openModal('GLITCH-SPECTER', 'Cryptic Perjury // Null Pointer', 'Marked by fractured metadata. Shifts ground-truth terrain through incomplete and corrupted ledger registries.')">
+          <div class="entity-header"><span class="entity-node">NODE-06</span><span class="entity-tag">Perjury</span></div>
+          <div class="entity-name">GLITCH-SPECTER</div>
+          <div class="entity-desc">Cryptic Perjury. Shifts ground truth data through altered registry keys.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-07</div>
-          <div class="entity-code">CODENAME: APEX-CATALYST</div>
+
+        <div class="entity-card" data-cat="kinetic" onclick="openModal('APEX-CATALYST', 'Hyper-Kinetic Stalker // Velocity Hazard', 'Accelerates rapidly when targeting agents carrying excess cognitive weight. Surpassed only by total mental exoneration.')">
+          <div class="entity-header"><span class="entity-node">NODE-07</span><span class="entity-tag">Kinetic</span></div>
+          <div class="entity-name">APEX-CATALYST</div>
           <div class="entity-desc">Hyper-Kinetic Stalker. Punishes hesitation and sluggish cognitive buffers.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-08</div>
-          <div class="entity-code">CODENAME: VOID-ENVOY</div>
-          <div class="entity-desc">Covenant Binder. Attempts to ensnare agents in non-reciprocal civic contracts.</div>
+
+        <div class="entity-card" data-cat="ancestral" onclick="openModal('VOID-ENVOY', 'Covenant Binder // Infinite Liability', 'Attempts to bind operatives in non-reciprocal civic contracts. Severed through decisive contractual detachment.')">
+          <div class="entity-header"><span class="entity-node">NODE-08</span><span class="entity-tag">Ancestral</span></div>
+          <div class="entity-name">VOID-ENVOY</div>
+          <div class="entity-desc">Covenant Binder. Attempts to ensnare agents in non-reciprocal contracts.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-09</div>
-          <div class="entity-code">CODENAME: AEGIS-VANGUARD</div>
-          <div class="entity-desc">Bulwark Sentinel. Tests defensive standard safety protocols under continuous siege.</div>
+
+        <div class="entity-card" data-cat="kinetic" onclick="openModal('AEGIS-VANGUARD', 'Bulwark Sentinel // Citadel Hard-Light', 'Deploys hard-light defensive bastions. Requires disciplined standard-safety maneuvers to dismantle without self-harm.')">
+          <div class="entity-header"><span class="entity-node">NODE-09</span><span class="entity-tag">Kinetic</span></div>
+          <div class="entity-name">AEGIS-VANGUARD</div>
+          <div class="entity-desc">Bulwark Sentinel. Tests defensive safety protocols under continuous siege.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-10</div>
-          <div class="entity-code">CODENAME: EMPATH-SIPHON</div>
+
+        <div class="entity-card" data-cat="ancestral" onclick="openModal('EMPATH-SIPHON', 'Psychic Sponge // Remorse Parasite', 'Feeds on misplaced empathy and moral micromanagement. Neutralized by withholding unearned remorse.')">
+          <div class="entity-header"><span class="entity-node">NODE-10</span><span class="entity-tag">Ancestral</span></div>
+          <div class="entity-name">EMPATH-SIPHON</div>
           <div class="entity-desc">Psychic Sponge. Absorbs unearned remorse from empathetic nodes.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-11</div>
-          <div class="entity-code">CODENAME: FALSE-TESTAMENT</div>
-          <div class="entity-desc">Arch-Witness. Broadcasts falsified data testimonies; demands absolute exposure to dispel.</div>
+
+        <div class="entity-card" data-cat="perjury" onclick="openModal('FALSE-TESTAMENT', 'Arch-Witness // Perjury Beacon', 'Channels blinding beacons of manufactured testimony. Shattered by revealing uncorrupted historical ledger data.')">
+          <div class="entity-header"><span class="entity-node">NODE-11</span><span class="entity-tag">Perjury</span></div>
+          <div class="entity-name">FALSE-TESTAMENT</div>
+          <div class="entity-desc">Arch-Witness. Broadcasts falsified testimonies; dispelled by hard evidence.</div>
         </div>
-        <div class="entity-card">
-          <div class="entity-title">NODE-12</div>
-          <div class="entity-code">CODENAME: NEXUS-QUEEN</div>
+
+        <div class="entity-card" data-cat="perjury" onclick="openModal('NEXUS-QUEEN', 'Network Singularity // Core Weaver', 'The master anchor tying the consensus layer together. Requires severing all residual external moral guilt to stabilize.')">
+          <div class="entity-header"><span class="entity-node">NODE-12</span><span class="entity-tag">Perjury</span></div>
+          <div class="entity-name">NEXUS-QUEEN</div>
           <div class="entity-desc">Network Singularity. Ties all twelve entities into a unified consensus layer.</div>
         </div>
       </div>
     </div>
 
+    <!-- INTERACTIVE SECTION 3: Scribe Clearance -->
     <div class="panel">
-      <h2>3. Enlist as a Scribe</h2>
-      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">
-        Register your network identity to initiate early protocol calibration.
+      <h2>// 03. ENLIST AS A SCRIBE</h2>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 8px;">
+        Issue your cryptographic identifier to claim your early access clearance badge.
       </p>
-      <input type="text" id="scribeName" placeholder="Enter Call-sign / Identifier" style="width: 100%; padding: 10px; background: #07090e; border: 1px solid #1e293b; color: #fff; border-radius: 4px;">
-      <button class="btn" onclick="registerScribe()">Confirm Registration</button>
-      <p id="regNotice" style="margin-top: 12px; font-size: 0.85rem; color: var(--cyan); display: none;"></p>
+      <div class="scribe-box">
+        <input type="text" id="scribeInput" placeholder="Enter Call-sign (e.g., Scribe-Zero)">
+        <button class="btn" onclick="generateClearance()">Claim Clearance</button>
+      </div>
+      <div id="clearanceCard" style="display: none; margin-top: 18px; padding: 18px; background: #080d17; border: 1px dashed var(--cyan); border-radius: 6px;">
+        <div style="font-size: 0.8rem; color: var(--amber); letter-spacing: 2px;">CLEARANCE PROTOCOL CONFIRMED</div>
+        <div style="font-size: 1.2rem; color: #fff; font-weight: bold; margin: 4px 0;" id="clearanceName">---</div>
+        <div style="font-size: 0.78rem; color: var(--muted);">Hash: <span id="clearanceHash" style="color: var(--cyan);">---</span></div>
+        <div style="font-size: 0.85rem; color: #cbd5e1; margin-top: 8px;">Status: Say-to-Do calibration synchronized. Early deployment key granted.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- Modal Component -->
+  <div class="modal-overlay" id="modalOverlay" onclick="closeModal(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="close-btn" onclick="closeModal()">&times;</button>
+      <div class="modal-title" id="mTitle">ENTITY</div>
+      <div class="modal-subtitle" id="mSub">ARCHETYPE</div>
+      <div class="modal-body" id="mBody">Description</div>
     </div>
   </div>
 
   <script>
-    const slider = document.getElementById('burdenSlider');
-    const burdenVal = document.getElementById('burdenVal');
-    const effVal = document.getElementById('effVal');
-    const shieldVal = document.getElementById('shieldVal');
+    // Ambient Particle Canvas
+    const canvas = document.getElementById('ambientCanvas');
+    const ctx = canvas.getContext('2d');
+    let w, h, particles = [];
+    function resize() { w = canvas.width = window.innerWidth; h = canvas.height = window.innerHeight; }
+    window.addEventListener('resize', resize);
+    resize();
+    for (let i = 0; i < 40; i++) {
+      particles.push({ x: Math.random() * w, y: Math.random() * h, s: Math.random() * 2 + 0.5, vy: Math.random() * 1.5 + 0.5 });
+    }
+    function render() {
+      ctx.clearRect(0, 0, w, h);
+      ctx.fillStyle = '#00f0ff';
+      particles.forEach(p => {
+        ctx.beginPath();
+        ctx.arc(p.x, p.y, p.s, 0, Math.PI * 2);
+        ctx.fill();
+        p.y += p.vy;
+        if (p.y > h) { p.y = -5; p.x = Math.random() * w; }
+      });
+      requestAnimationFrame(render);
+    }
+    render();
 
-    slider.addEventListener('input', (e) => {
-      const val = parseInt(e.target.value);
-      burdenVal.textContent = val;
-      effVal.textContent = (100 - val) + '%';
-      
-      if (val < 40) {
-        shieldVal.textContent = 'Stable';
-        shieldVal.style.color = '#00f0ff';
-      } else if (val < 75) {
-        shieldVal.textContent = 'Compromised';
-        shieldVal.style.color = '#ffb703';
+    // Burden Simulation Logic
+    let currentBurden = 15;
+    function toggleBurden(btn, amount) {
+      if (btn.classList.contains('active')) {
+        btn.classList.remove('active');
+        currentBurden -= amount;
       } else {
-        shieldVal.textContent = 'CRITICAL OVERLOAD';
-        shieldVal.style.color = '#ff0055';
+        btn.classList.add('active');
+        currentBurden += amount;
       }
-    });
+      currentBurden = Math.max(0, Math.min(100, currentBurden));
+      updateGauge();
+    }
+    function resetBurden() {
+      document.querySelectorAll('.choice-btn').forEach(b => b.classList.remove('active'));
+      currentBurden = 0;
+      updateGauge();
+    }
+    function updateGauge() {
+      const bPct = document.getElementById('burdenPct');
+      const effPct = document.getElementById('effPct');
+      const shield = document.getElementById('shieldStatus');
+      const bar = document.getElementById('progressBar');
+      const act = document.getElementById('tacticalAction');
 
-    function registerScribe() {
-      const input = document.getElementById('scribeName');
-      const notice = document.getElementById('regNotice');
-      if (input.value.trim() === '') {
-        notice.style.color = '#ff0055';
-        notice.textContent = 'Please enter an identifier first.';
+      bPct.textContent = currentBurden + '%';
+      effPct.textContent = (100 - currentBurden) + '%';
+      bar.style.width = currentBurden + '%';
+
+      if (currentBurden < 30) {
+        bar.style.backgroundColor = '#00f0ff';
+        shield.textContent = 'SHIELD INTEGRITY: ' + (100 - currentBurden) + '% (OPTIMAL)';
+        shield.style.color = '#00f0ff';
+        act.textContent = 'Action: Normal flow. Focus entirely on personal execution.';
+      } else if (currentBurden < 65) {
+        bar.style.backgroundColor = '#ffb703';
+        shield.textContent = 'SHIELD INTEGRITY: ' + (100 - currentBurden) + '% (DEGRADED)';
+        shield.style.color = '#ffb703';
+        act.textContent = 'Warning: Sluggish buffer. Detach from secondary duties.';
       } else {
-        notice.style.color = '#00f0ff';
-        notice.textContent = 'Registration recorded for [' + input.value.trim() + ']. Protocol initialized.';
+        bar.style.backgroundColor = '#ff0055';
+        shield.textContent = 'SHIELD INTEGRITY: CRITICAL COMPROMISE';
+        shield.style.color = '#ff0055';
+        act.textContent = 'DANGER: Overload imminent. Trigger Exoneration immediately!';
       }
-      notice.style.display = 'block';
+    }
+
+    // Filter Cards
+    function filterCards(category, btn) {
+      document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      const cards = document.querySelectorAll('.entity-card');
+      cards.forEach(card => {
+        if (category === 'all' || card.getAttribute('data-cat') === category) {
+          card.style.display = 'block';
+        } else {
+          card.style.display = 'none';
+        }
+      });
+    }
+
+    // Modal Operations
+    function openModal(title, sub, body) {
+      document.getElementById('mTitle').textContent = title;
+      document.getElementById('mSub').textContent = sub;
+      document.getElementById('mBody').textContent = body;
+      document.getElementById('modalOverlay').style.display = 'flex';
+    }
+    function closeModal() {
+      document.getElementById('modalOverlay').style.display = 'none';
+    }
+
+    // Clearance Generator
+    function generateClearance() {
+      const val = document.getElementById('scribeInput').value.trim();
+      if (!val) return alert('Enter a call-sign first.');
+      document.getElementById('clearanceName').textContent = 'SCRIBE ID: ' + val.toUpperCase();
+      document.getElementById('clearanceHash').textContent = '0x' + Math.random().toString(16).substring(2, 10).toUpperCase() + '-' + Date.now().toString(16).toUpperCase();
+      document.getElementById('clearanceCard').style.display = 'block';
     }
   </script>
 </body>
