@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>THOUGHTLEAKS // The Say-to-Do Protocol</title>
+  <style>
+    :root {
+      --bg: #07090e;
+      --card: #0f141f;
+      --cyan: #00f0ff;
+      --amber: #ffb703;
+      --crimson: #ff0055;
+      --text: #e2e8f0;
+      --muted: #64748b;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, monospace; }
+    body { background-color: var(--bg); color: var(--text); overflow-x: hidden; padding-bottom: 60px; }
+    header { border-bottom: 1px solid #1e293b; padding: 24px; text-align: center; background: rgba(15, 20, 31, 0.8); }
+    h1 { color: var(--cyan); letter-spacing: 4px; font-size: 2.2rem; text-transform: uppercase; }
+    .tagline { color: var(--muted); margin-top: 8px; font-size: 0.95rem; }
+    .container { max-width: 900px; margin: 0 auto; padding: 24px; }
+    .panel { background: var(--card); border: 1px solid #1e293b; border-radius: 8px; padding: 24px; margin-bottom: 24px; }
+    h2 { color: var(--amber); margin-bottom: 16px; font-size: 1.3rem; border-left: 4px solid var(--amber); padding-left: 8px; }
+    .slider-container { margin: 20px 0; }
+    input[type=range] { width: 100%; accent-color: var(--cyan); margin: 12px 0; }
+    .status-row { display: flex; justify-content: space-between; font-weight: bold; margin-top: 8px; }
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 16px; margin-top: 16px; }
+    .entity-card { background: #131a29; border: 1px solid #1e293b; border-radius: 6px; padding: 16px; border-top: 3px solid var(--cyan); }
+    .entity-title { font-weight: bold; color: var(--cyan); font-size: 1.05rem; }
+    .entity-code { font-size: 0.8rem; color: var(--amber); margin-bottom: 8px; }
+    .entity-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.4; }
+    .btn { background: var(--cyan); color: #000; border: none; padding: 12px 24px; font-weight: bold; border-radius: 4px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; width: 100%; margin-top: 12px; }
+    .btn:hover { background: #38f8ff; }
+  </style>
+</head>
+<body>
+
+  <header>
+    <h1>THOUGHTLEAKS</h1>
+    <div class="tagline">Maintain Say-to-Do Equilibrium // Relieve the Burden of External Delivery</div>
+  </header>
+
+  <div class="container">
+    <div class="panel">
+      <h2>1. The Say-to-Do Simulator</h2>
+      <p style="color: var(--muted); font-size: 0.9rem; line-height: 1.5;">
+        Evaluate how policing others' societal delivery against your personal responsibility impacts your systemic function.
+      </p>
+      <div class="slider-container">
+        <label for="burdenSlider">External Mental Burden Level (<span id="burdenVal">20</span>%):</label>
+        <input type="range" id="burdenSlider" min="0" max="100" value="20">
+      </div>
+      <div class="status-row">
+        <span>Operational Efficiency: <span id="effVal" style="color: var(--cyan);">80%</span></span>
+        <span>Standard Safety Shield: <span id="shieldVal" style="color: var(--amber);">Stable</span></span>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>2. The Twelve Cardinal Entities</h2>
+      <div class="card-grid">
+        <div class="entity-card">
+          <div class="entity-title">Wahida Begum</div>
+          <div class="entity-code">MATRIX-MATRON</div>
+          <div class="entity-desc">Ancestral Anchor. Demands absolute fidelity to biological and familial bonds.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Mohammad Ali</div>
+          <div class="entity-code">IRON-TITAN</div>
+          <div class="entity-desc">Kinetic Juggernaut. Evaluates direct physical and functional delivery without hesitation.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Sabiha Parvin Suma</div>
+          <div class="entity-code">RESONANCE-SIREN</div>
+          <div class="entity-desc">Acoustic Disruptor. Projects self-doubt and internal guilt directly into network channels.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Abdul Kader Mohiuddin</div>
+          <div class="entity-code">ZERO-ARBITER</div>
+          <div class="entity-desc">Protocol Judge. Enforces strict equivalence between stated oaths and historical ledger entries.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Ahsan Uz Zaman Sourov</div>
+          <div class="entity-code">CHRONO-DRIFT</div>
+          <div class="entity-desc">Temporal Ghost. Fuses unresolved past obligations into present decision branches.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">MH Mukul Hossen</div>
+          <div class="entity-code">GLITCH-SPECTER</div>
+          <div class="entity-desc">Cryptic Perjury. Shifts ground truth data through incomplete and altered registry keys.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Asadujjaman Babu</div>
+          <div class="entity-code">APEX-CATALYST</div>
+          <div class="entity-desc">Hyper-Kinetic Stalker. Punishes hesitation and sluggish cognitive buffers.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Abdus Samad Azad</div>
+          <div class="entity-code">VOID-ENVOY</div>
+          <div class="entity-desc">Covenant Binder. Attempts to ensnare agents in non-reciprocal civic contracts.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Rakibul Alam Pappu</div>
+          <div class="entity-code">AEGIS-VANGUARD</div>
+          <div class="entity-desc">Bulwark Sentinel. Tests defensive standard safety protocols under continuous siege.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">HM Bodiujjaman Shohag</div>
+          <div class="entity-code">EMPATH-SIPHON</div>
+          <div class="entity-desc">Psychic Sponge. Absorbs unearned remorse from empathetic nodes.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Mustafizur Rahman Mustak</div>
+          <div class="entity-code">FALSE-TESTAMENT</div>
+          <div class="entity-desc">Arch-Witness. Broadcasts falsified data testimonies; demands absolute exposure to dispel.</div>
+        </div>
+        <div class="entity-card">
+          <div class="entity-title">Hasina Akter Khan</div>
+          <div class="entity-code">NEXUS-QUEEN</div>
+          <div class="entity-desc">Network Singularity. Ties all twelve entities into a unified consensus layer.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>3. Enlist as a Scribe</h2>
+      <p style="color: var(--muted); font-size: 0.9rem; margin-bottom: 12px;">
+        Register your network identity to initiate early protocol calibration.
+      </p>
+      <input type="text" id="scribeName" placeholder="Enter Call-sign / Identifier" style="width: 100%; padding: 10px; background: #07090e; border: 1px solid #1e293b; color: #fff; border-radius: 4px;">
+      <button class="btn" onclick="registerScribe()">Confirm Registration</button>
+      <p id="regNotice" style="margin-top: 12px; font-size: 0.85rem; color: var(--cyan); display: none;"></p>
+    </div>
+  </div>
+
+  <script>
+    const slider = document.getElementById('burdenSlider');
+    const burdenVal = document.getElementById('burdenVal');
+    const effVal = document.getElementById('effVal');
+    const shieldVal = document.getElementById('shieldVal');
+
+    slider.addEventListener('input', (e) => {
+      const val = parseInt(e.target.value);
+      burdenVal.textContent = val;
+      effVal.textContent = (100 - val) + '%';
+      
+      if (val < 40) {
+        shieldVal.textContent = 'Stable';
+        shieldVal.style.color = '#00f0ff';
+      } else if (val < 75) {
+        shieldVal.textContent = 'Compromised';
+        shieldVal.style.color = '#ffb703';
+      } else {
+        shieldVal.textContent = 'CRITICAL OVERLOAD';
+        shieldVal.style.color = '#ff0055';
+      }
+    });
+
+    function registerScribe() {
+      const input = document.getElementById('scribeName');
+      const notice = document.getElementById('regNotice');
+      if (input.value.trim() === '') {
+        notice.style.color = '#ff0055';
+        notice.textContent = 'Please enter an identifier first.';
+      } else {
+        notice.style.color = '#00f0ff';
+        notice.textContent = 'Registration recorded for [' + input.value.trim() + ']. Protocol initialized.';
+      }
+      notice.style.display = 'block';
+    }
+  </script>
+</body>
+</html>
